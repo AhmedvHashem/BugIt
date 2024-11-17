@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.hashem.app"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.hashem.app"
