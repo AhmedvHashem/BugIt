@@ -1,6 +1,6 @@
 package com.hashem.bugit.domain
 
-interface BugitRepository {
+internal interface BugitRepository {
 
     fun report(bug: Bug)
 }
