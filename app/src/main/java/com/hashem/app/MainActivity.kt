@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val bugit = BugIt.init(BugIt.Config().addExtraField("Priority")).getInstance()
+
         installSplashScreen()
         enableEdgeToEdge()
         setContent {
@@ -94,10 +95,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
-    fun openGallery() {
-
     }
 }
 

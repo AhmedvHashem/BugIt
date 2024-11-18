@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -138,6 +139,16 @@ internal fun MainView(
                 label = { Text(key) },
                 isError = false,
             )
+        }
+
+        Button(
+//            enabled = buttonEnabled,
+            onClick = { viewModel.reportBug(image.toString(), fields) },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(top = 8.dp)
+        ) {
+            Text("Report Bug")
         }
 
     }
