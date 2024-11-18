@@ -1,39 +1,43 @@
 package com.hashem.bugit
 
+import android.content.Context
+import android.net.Uri
 import com.hashem.bugit.data.BugitDataSource
 import com.hashem.bugit.framework.GoogleSheetDataSource
+import com.hashem.bugit.ui.BugItActivity
 
-class BugIt private constructor(
-    fields: MutableMap<String, String> = mutableMapOf(),
-    externalConnector: BugitDataSource
-) {
-    class Builder {
-        object CONST {
-            const val KEY_SCREENSHOT = "bug-screenshot"
-            const val KEY_DESCRIPTION = "bug-description"
+class BugIt private constructor(val config: Config) {
+
+    companion object {
+        private var bugIt: BugIt? = null
+
+        fun init(config: Config) = apply {
+            bugIt = BugIt(config.build())
         }
 
-
-        private val fields = mutableMapOf<String, String>()
-        private var externalConnector: BugitDataSource? = null
-
-        fun screenShot(screenShot: String) =
-            apply { this.fields[CONST.KEY_SCREENSHOT] = screenShot }
-
-        fun description(description: String) =
-            apply { this.fields[CONST.KEY_DESCRIPTION] = description }
-
-        fun addExtraField(key: String, defaultValue: String) =
-            apply { this.fields[key] = defaultValue }
-
-        fun useExternalConnector(externalConnector: BugitDataSource) = apply {
-            this.externalConnector = externalConnector
+        fun getInstance(): BugIt {
+            if (bugIt == null) {
+                throw IllegalArgumentException("You need to initialize BugIt first in the application class")
+            } else {
+                return bugIt!!
+            }
         }
-
-        fun build() = BugIt(fields, externalConnector ?: GoogleSheetDataSource())
     }
 
-    fun show() {
+    class Config(
+        val fields: MutableList<String> = mutableListOf("Description"),
+        var connector: BugitDataSource = GoogleSheetDataSource()
+    ) {
+        fun addExtraField(label: String) =
+            apply { fields.add(label) }
 
+        fun useExternalConnector(externalConnector: BugitDataSource) =
+            apply { connector = externalConnector }
+
+        internal fun build() = Config(fields, connector)
+    }
+
+    fun show(context: Context, image: Uri) {
+        BugItActivity.start(context, image, config.fields)
     }
 }
