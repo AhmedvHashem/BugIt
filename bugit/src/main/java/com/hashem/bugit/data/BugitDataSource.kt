@@ -2,5 +2,5 @@ package com.hashem.bugit.data
 
 interface BugitDataSource {
 
-    suspend fun report(screenShot: String, fields: Map<String, String>)
+    suspend fun report(image: String, fields: Map<String, String>)
 }
