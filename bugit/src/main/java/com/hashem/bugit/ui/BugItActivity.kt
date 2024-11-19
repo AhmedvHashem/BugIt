@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -67,12 +66,10 @@ internal class BugItActivity : ComponentActivity() {
 
     companion object {
         private const val EXTRA_BUG_IMAGE = "EXTRA_BUG_IMAGE"
-        private const val EXTRA_BUG_FIELDS = "EXTRA_BUG_FIELDS"
 
-        fun start(context: Context, image: Uri, fields: List<String>) {
+        fun start(context: Context, images: ArrayList<Uri>) {
             val startIntent = Intent(context, BugItActivity::class.java)
-                .putExtra(EXTRA_BUG_IMAGE, image)
-                .putExtra(EXTRA_BUG_FIELDS, fields.toTypedArray())
+                .putExtra(EXTRA_BUG_IMAGE, images)
             startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(startIntent)
         }
@@ -81,12 +78,8 @@ internal class BugItActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val image = intent.getParcelableExtra<Uri>(EXTRA_BUG_IMAGE)
-        val fields = intent.getStringArrayExtra(EXTRA_BUG_FIELDS)
-        if (image == null || fields == null) {
-            finish()
-            return
-        }
+        val images = intent.getSerializableExtra(EXTRA_BUG_IMAGE) as ArrayList<Uri>
+
 
         enableEdgeToEdge()
         setContent {
@@ -117,8 +110,7 @@ internal class BugItActivity : ComponentActivity() {
                             .fillMaxSize()
                             .verticalScroll(scrollState)
                             .padding(16.dp),
-                        image,
-                        fields,
+                        images,
                         viewModel,
                         onCloseClicked = {
                             finish()
@@ -142,15 +134,14 @@ fun MainViewPreview() {
 @Composable
 internal fun MainView(
     modifier: Modifier = Modifier,
-    image: Uri,
-    initialFields: Array<String>,
+    images: List<Uri>,
     viewModel: BugItViewModel,
     onCloseClicked: () -> Unit,
 ) {
     val context = LocalContext.current
 
     val fields = remember {
-        val array = initialFields.map {
+        val array = viewModel.initialFields.map {
             it to ""
         }.toTypedArray()
         mutableStateMapOf(*array)
@@ -176,10 +167,12 @@ internal fun MainView(
         }
 
         Column(modifier) {
-            HorizontalScrollScreen(listOf(image, image, image))
+            HorizontalScrollScreen(viewModel.allowMultipleImage, images)
 //            BugImage(image)
 
-            fields.toSortedMap().forEach { (key, value) ->
+            fields.toSortedMap(
+                compareBy { it.key }
+            ).forEach { (key, value) ->
                 OutlinedTextField(
                     value = value,
                     singleLine = true,
@@ -189,7 +182,7 @@ internal fun MainView(
                     onValueChange = {
                         fields[key] = it
                     },
-                    label = { Text(key) },
+                    label = { Text(key.value) },
                     isError = false,
                 )
             }
@@ -198,8 +191,10 @@ internal fun MainView(
 //            enabled = buttonEnabled,
                 onClick = {
                     viewModel.reportBug(
-                        Utils.getFilePathFromURI(context, image) ?: "",
-                        fields
+                        Utils.getFilePathFromURI(context, images.first()) ?: "",
+                        fields.map {
+                            it.key.value to it.value
+                        }.toMap()
                     )
                 },
                 modifier = Modifier
@@ -213,7 +208,7 @@ internal fun MainView(
 }
 
 @Composable
-fun HorizontalScrollScreen(uri: List<Uri>) {
+fun HorizontalScrollScreen(allowMultipleImage: Boolean, uris: List<Uri>) {
     // a wrapper to fill the entire screen
     Box(modifier = Modifier.fillMaxWidth()) {
         // BowWithConstraints will provide the maxWidth used below
@@ -222,10 +217,10 @@ fun HorizontalScrollScreen(uri: List<Uri>) {
                 modifier = Modifier.fillMaxWidth(),
                 state = rememberLazyListState()
             ) {
-                items(uri) { item ->
+                items(uris) { item ->
                     Card(
                         modifier = Modifier
-                            .width(maxWidth - (maxWidth / 8))
+                            .width(if (uris.size > 1) maxWidth - (maxWidth / 8) else maxWidth)
                             .padding(8.dp)
                     ) {
                         BugImage(item)

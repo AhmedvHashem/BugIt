@@ -36,9 +36,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val bugit = BugIt.init(
             BugIt.Config()
-                .addExtraField("Priority")
-                .addExtraField("Department")
-                .addExtraField("Assignee")
+                .allowMultipleImage(true)
+                .addExtraField("02_priority", "Priority")
+//                .addExtraField("03_department", "Department")
+                .addExtraField("04_assignee", "Assignee")
         ).getInstance()
 
         installSplashScreen()
@@ -62,9 +63,18 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier, verticalArrangement = Arrangement.SpaceBetween
                     ) {
                         val galleryLauncher =
-                            rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-                                uri?.let { bugit.show(baseContext, it) }
-                            }
+                            if (!bugit.config.allowMultipleImage)
+                                rememberLauncherForActivityResult(
+                                    ActivityResultContracts.GetContent()
+                                ) { uri: Uri? ->
+                                    uri?.let { bugit.show(baseContext, arrayListOf(it)) }
+                                }
+                            else
+                                rememberLauncherForActivityResult(
+                                    ActivityResultContracts.GetMultipleContents()
+                                ) { uris: List<Uri>? ->
+                                    uris?.let { bugit.show(baseContext, ArrayList(it)) }
+                                }
 
                         val permissionLauncher = rememberLauncherForActivityResult(
                             ActivityResultContracts.RequestPermission()

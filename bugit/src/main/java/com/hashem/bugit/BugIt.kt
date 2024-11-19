@@ -2,7 +2,7 @@ package com.hashem.bugit
 
 import android.content.Context
 import android.net.Uri
-import com.hashem.bugit.data.BugitDataSource
+import com.hashem.bugit.data.BugItDataSource
 import com.hashem.bugit.framework.GoogleSheetDataSource
 import com.hashem.bugit.ui.BugItActivity
 
@@ -12,7 +12,7 @@ class BugIt private constructor(val config: Config) {
         private var bugIt: BugIt? = null
 
         fun init(config: Config) = apply {
-            bugIt = BugIt(config.build())
+            bugIt = BugIt(config)
         }
 
         fun getInstance(): BugIt {
@@ -24,20 +24,30 @@ class BugIt private constructor(val config: Config) {
         }
     }
 
-    class Config(
-        val fields: MutableList<String> = mutableListOf("Description"),
-        var connector: BugitDataSource = GoogleSheetDataSource()
-    ) {
-        fun addExtraField(label: String) =
-            apply { fields.add(label) }
+    class Config {
+        var allowMultipleImage: Boolean = false
+            private set
 
-        fun useExternalConnector(externalConnector: BugitDataSource) =
+        var fields: MutableMap<String, String> = mutableMapOf("01_description" to "Description")
+            private set
+
+        var connector: BugItDataSource = GoogleSheetDataSource()
+            private set
+
+        fun allowMultipleImage(enable: Boolean) =
+            apply { allowMultipleImage = enable }
+
+        /*
+            key: used for sorting also, so it should be in the format ex: 01_description, 02_priority, 03_department
+         */
+        fun addExtraField(key: String, label: String) =
+            apply { fields[key] = label }
+
+        fun useExternalConnector(externalConnector: BugItDataSource) =
             apply { connector = externalConnector }
-
-        internal fun build() = Config(fields, connector)
     }
 
-    fun show(context: Context, image: Uri) {
-        BugItActivity.start(context, image, config.fields)
+    fun show(context: Context, image: ArrayList<Uri>) {
+        BugItActivity.start(context, image)
     }
 }

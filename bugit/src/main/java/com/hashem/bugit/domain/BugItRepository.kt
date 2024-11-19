@@ -1,6 +1,6 @@
 package com.hashem.bugit.domain
 
-internal interface BugitRepository {
+internal interface BugItRepository {
 
     suspend fun report(bug: Bug)
 }

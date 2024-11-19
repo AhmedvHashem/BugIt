@@ -11,12 +11,11 @@ import com.hashem.bugit.domain.Bug
 import com.hashem.bugit.domain.ReportBugUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 internal class BugItViewModel(
+    val allowMultipleImage: Boolean = false,
+    val initialFields: Map<String, String> = emptyMap(),
     private val reportBugUseCase: ReportBugUseCase
 ) : ViewModel() {
 
@@ -27,7 +26,7 @@ internal class BugItViewModel(
 
                 val repo = DefaultBugItRepository(bugitConfig.connector)
                 val useCase = ReportBugUseCase(repo)
-                BugItViewModel(useCase)
+                BugItViewModel(bugitConfig.allowMultipleImage, bugitConfig.fields, useCase)
             }
         }
     }
@@ -35,10 +34,10 @@ internal class BugItViewModel(
 //    private val _uiState = MutableStateFlow(initialFields)
 //    val uiState: StateFlow<Map<String, String>> = _uiState.asStateFlow()
 
-    fun reportBug(bugImage: String, fields: Map<String, String> = emptyMap()) {
+    fun reportBug(imagePath: String, fields: Map<String, String> = emptyMap()) {
         viewModelScope.launch {
             CoroutineScope(Dispatchers.IO).launch {
-                reportBugUseCase.report(Bug(bugImage, fields))
+                reportBugUseCase.report(Bug(imagePath, fields))
             }
         }
     }
