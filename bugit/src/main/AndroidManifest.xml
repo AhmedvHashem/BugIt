@@ -2,13 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-    <application>
+    <application android:requestLegacyExternalStorage="true">
         <activity
             android:name=".ui.BugItActivity"
             android:exported="false"
             android:label="@string/title_activity_bug_it"
-            android:theme="@style/Theme.BugIt" />
+            android:theme="@style/Theme.BugIt"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>
