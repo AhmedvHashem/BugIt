@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.material3)
 
     implementation(project(":bugit"))
+    implementation(libs.screenshot.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

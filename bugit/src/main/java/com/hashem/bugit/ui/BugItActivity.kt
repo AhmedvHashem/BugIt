@@ -17,8 +17,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -48,12 +51,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.hashem.bugit.Utils
 import com.hashem.bugit.ui.ui.theme.BugItTheme
 import kotlinx.coroutines.launch
@@ -123,14 +130,6 @@ internal class BugItActivity : ComponentActivity() {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun MainViewPreview() {
-    BugItTheme {
-//        MainView()
-    }
-}
-
 @Composable
 internal fun MainView(
     modifier: Modifier = Modifier,
@@ -168,7 +167,6 @@ internal fun MainView(
 
         Column(modifier) {
             HorizontalScrollScreen(viewModel.allowMultipleImage, images)
-//            BugImage(image)
 
             fields.toSortedMap(
                 compareBy { it.key }
@@ -223,33 +221,21 @@ fun HorizontalScrollScreen(allowMultipleImage: Boolean, uris: List<Uri>) {
                             .width(if (uris.size > 1) maxWidth - (maxWidth / 8) else maxWidth)
                             .padding(8.dp)
                     ) {
-                        BugImage(item)
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(item)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = "",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(0.8f)
+                                .clip(RoundedCornerShape(8.dp)),
+                        )
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun BugImage(uri: Uri) {
-    val context = LocalContext.current
-    val bitmap = remember(uri) {
-        try {
-            val inputStream = context.contentResolver.openInputStream(uri)
-            BitmapFactory.decodeStream(inputStream)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    bitmap?.let {
-        Image(
-            bitmap = it.asImageBitmap(),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-        )
     }
 }

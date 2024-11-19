@@ -3,15 +3,20 @@ package com.hashem.bugit
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.text.TextUtils
 import android.util.Base64
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 object Utils {
 
@@ -178,5 +183,19 @@ object Utils {
         }
 
         return byteArray
+    }
+
+    fun bitmapToUri(context: Context, bitmap: Bitmap): Uri? {
+        val title = "JPEG_" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        try {
+            val bytes = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 75, bytes)
+            val path =
+                MediaStore.Images.Media.insertImage(context.contentResolver, bitmap, title, null)
+            return Uri.parse(path)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
     }
 }

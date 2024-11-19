@@ -10,6 +10,8 @@ activityCompose = "1.9.3"
 composeBom = "2024.11.00"
 
 material = "1.12.0"
+coilCompose = "3.0.3"
+screenshotCompose = "1.0.3"
 
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -19,6 +21,8 @@ espressoCore = "3.6.1"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
+screenshot-compose = { module = "com.github.SmartToolFactory:Compose-Screenshot", version.ref = "screenshotCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
