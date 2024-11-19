@@ -1,5 +1,6 @@
 package com.hashem.app
 
+import android.Manifest
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,25 +10,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.displayCutoutPadding
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -46,49 +34,59 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val bugit = BugIt.init(BugIt.Config().addExtraField("Priority")).getInstance()
+        val bugit = BugIt.init(
+            BugIt.Config()
+                .addExtraField("Priority")
+                .addExtraField("Department")
+                .addExtraField("Assignee")
+        ).getInstance()
 
         installSplashScreen()
         enableEdgeToEdge()
         setContent {
             BugItTheme {
-                Scaffold(
-                    topBar = {
-                        TopAppBar(
-                            title = {
-                                Text(
-                                    "Demo App",
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center
-                                )
-                            },
-                            modifier = Modifier
-                                .background(Color.Black)
-                                .shadow(6.dp)
-                        )
-                    },
-                    floatingActionButtonPosition = FabPosition.End,
-                    floatingActionButton = {
-                        Column(
-                            modifier = Modifier,
-                            verticalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            val galleryLauncher =
-                                rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-                                    uri?.let { bugit.show(baseContext, it) }
-                                }
-                            ExtendedFloatingActionButton(onClick = {
-//                                bugit.show(baseContext)
-                            }) {
-                                Text("Take Screenshot")
+                Scaffold(topBar = {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                "Demo App",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        }, modifier = Modifier
+                            .background(Color.Black)
+                            .shadow(6.dp)
+                    )
+                }, floatingActionButtonPosition = FabPosition.End, floatingActionButton = {
+                    Column(
+                        modifier = Modifier, verticalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        val galleryLauncher =
+                            rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+                                uri?.let { bugit.show(baseContext, it) }
                             }
-                            ExtendedFloatingActionButton(onClick = {
+
+                        val permissionLauncher = rememberLauncherForActivityResult(
+                            ActivityResultContracts.RequestPermission()
+                        ) { isGranted ->
+                            if (isGranted) {
                                 galleryLauncher.launch("image/*")
-                            }) {
-                                Text("Pick from Gallery")
                             }
                         }
-                    }) { padding ->
+
+                        ExtendedFloatingActionButton(onClick = {
+                            permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                        }) {
+                            Text("Pick from Gallery")
+                        }
+
+//                        ExtendedFloatingActionButton(onClick = {
+//                                bugit.show(baseContext)
+//                        }) {
+//                            Text("Take Screenshot")
+//                        }
+                    }
+                }) { padding ->
                     Column(modifier = Modifier.padding(padding)) {
                         MainView()
                     }
@@ -109,7 +107,6 @@ fun MainViewPreview() {
 @Composable
 fun MainView(modifier: Modifier = Modifier.fillMaxWidth()) {
     Text(
-        text = "This screen has a bug",
-        modifier = modifier
+        text = "This screen has a bug", modifier = modifier
     )
 }
