@@ -37,7 +37,8 @@ internal class BugItViewModel(
     fun reportBug(imagePath: String, fields: Map<String, String> = emptyMap()) {
         viewModelScope.launch {
             CoroutineScope(Dispatchers.IO).launch {
-                reportBugUseCase.report(Bug(imagePath, fields))
+               val response = reportBugUseCase.report(Bug(imagePath, fields))
+                println("response: $response")
             }
         }
     }
