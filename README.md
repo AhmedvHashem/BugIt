@@ -3,6 +3,12 @@
 **BugIt** is a Kotlin-based bug tracking application, designed for modern development teams to manage and resolve bugs efficiently.
 
 ---
+## 📚 Screenshots from demo-app
+| Bug screen    | Single Image  | Multi-Image   |
+| ------------- | ------------- | ------------- |
+| ![Screenshot_20241120_034309](https://github.com/user-attachments/assets/b49f172a-62b7-458a-ace6-f7fc731809a4)  | ![Screenshot_20241120_034430](https://github.com/user-attachments/assets/2f34988b-6756-49eb-9f63-df6fc3101671)  | ![Screenshot_20241120_034642](https://github.com/user-attachments/assets/ad1dd62d-24df-4340-aca8-faa3daac1cde) |
+
+---
 
 ## 📚 Tech Stack
 - **Programming Language**: Kotlin
@@ -44,13 +50,14 @@
   bugit.show(context, /* list of images uri */)
   ```
 
-### Database
-[Link](https://drive.google.com/drive/folders/1meSFbpvbwgKAJ2kAKBThQF400X8JOcPp?usp=drive_link)
+## 📦 Database
+- [Link](https://drive.google.com/drive/folders/1meSFbpvbwgKAJ2kAKBThQF400X8JOcPp?usp=drive_link)
 ---
 
 ## 📊 Class Diagram
+**a high-level overview**
 
-### a high-level overview 
+<img width="655" alt="Screenshot 2024-11-20 at 3 40 25 AM" src="https://github.com/user-attachments/assets/a2029f02-a3e8-4a3e-9eb4-179cddc894e6">
 
 
 
