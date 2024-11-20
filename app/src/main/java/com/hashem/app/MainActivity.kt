@@ -47,12 +47,13 @@ import com.smarttoolfactory.screenshot.ScreenshotBox
 import com.smarttoolfactory.screenshot.rememberScreenshotState
 
 class MainActivity : ComponentActivity() {
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val bugit = BugIt.init(
             BugIt.Config()
-                .allowMultipleImage(true)
+//                .allowMultipleImage(true)
                 .addExtraField("02_priority", "Priority")
 //                .addExtraField("03_department", "Department")
                 .addExtraField("04_assignee", "Assignee")

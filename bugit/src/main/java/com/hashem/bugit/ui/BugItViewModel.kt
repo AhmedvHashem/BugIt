@@ -6,15 +6,14 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.hashem.bugit.BugIt
-import com.hashem.bugit.data.DefaultBugItRepository
-import com.hashem.bugit.domain.Bug
+import com.hashem.bugit.data.DefaultBugRepository
 import com.hashem.bugit.domain.ReportBugUseCase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 internal class BugItViewModel(
-    val allowMultipleImage: Boolean = false,
     val initialFields: Map<String, String> = emptyMap(),
     private val reportBugUseCase: ReportBugUseCase
 ) : ViewModel() {
@@ -24,21 +23,26 @@ internal class BugItViewModel(
             initializer {
                 val bugitConfig = BugIt.getInstance().config
 
-                val repo = DefaultBugItRepository(bugitConfig.connector)
+                val repo = DefaultBugRepository(bugitConfig.connector)
                 val useCase = ReportBugUseCase(repo)
-                BugItViewModel(bugitConfig.allowMultipleImage, bugitConfig.fields, useCase)
+                BugItViewModel(bugitConfig.fields, useCase)
             }
         }
     }
 
-//    private val _uiState = MutableStateFlow(initialFields)
-//    val uiState: StateFlow<Map<String, String>> = _uiState.asStateFlow()
+    private val _uiState by lazy { MutableStateFlow<BugItUIState>(BugItUIState.Initial) }
+    val uiState: StateFlow<BugItUIState> get() = _uiState.asStateFlow()
 
     fun reportBug(imagePath: String, fields: Map<String, String> = emptyMap()) {
         viewModelScope.launch {
-            CoroutineScope(Dispatchers.IO).launch {
-               val response = reportBugUseCase.report(Bug(imagePath, fields))
+            _uiState.value = BugItUIState.Loading
+            try {
+                val response = reportBugUseCase(imagePath, fields)
+                _uiState.value = BugItUIState.Success("Bug Reported!")
                 println("response: $response")
+            } catch (e: Exception) {
+                _uiState.value = BugItUIState.Error("Failed to report bug")
+                println("error: $e")
             }
         }
     }

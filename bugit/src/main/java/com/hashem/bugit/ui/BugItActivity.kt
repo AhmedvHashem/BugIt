@@ -3,14 +3,13 @@ package com.hashem.bugit.ui
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Box
@@ -20,8 +19,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -37,6 +34,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -44,19 +42,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
@@ -86,7 +84,6 @@ internal class BugItActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val images = intent.getSerializableExtra(EXTRA_BUG_IMAGE) as ArrayList<Uri>
-
 
         enableEdgeToEdge()
         setContent {
@@ -124,7 +121,6 @@ internal class BugItActivity : ComponentActivity() {
                         }
                     )
                 }
-
             }
         }
     }
@@ -132,19 +128,14 @@ internal class BugItActivity : ComponentActivity() {
 
 @Composable
 internal fun MainView(
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
     images: List<Uri>,
     viewModel: BugItViewModel,
     onCloseClicked: () -> Unit,
 ) {
     val context = LocalContext.current
 
-    val fields = remember {
-        val array = viewModel.initialFields.map {
-            it to ""
-        }.toTypedArray()
-        mutableStateMapOf(*array)
-    }
+    val uiState by viewModel.uiState.collectAsState()
 
     Column(
         Modifier
@@ -165,48 +156,80 @@ internal fun MainView(
             )
         }
 
-        Column(modifier) {
-            HorizontalScrollScreen(viewModel.allowMultipleImage, images)
-
-            fields.toSortedMap(
-                compareBy { it.key }
-            ).forEach { (key, value) ->
-                OutlinedTextField(
-                    value = value,
-                    singleLine = true,
-                    modifier = Modifier
-                        .padding(top = 8.dp)
-                        .fillMaxWidth(),
-                    onValueChange = {
-                        fields[key] = it
-                    },
-                    label = { Text(key.value) },
-                    isError = false,
+        when (uiState) {
+            BugItUIState.Initial -> {
+                FormScreen(
+                    modifier,
+                    context,
+                    images,
+                    viewModel
                 )
             }
 
-            Button(
-//            enabled = buttonEnabled,
-                onClick = {
-                    viewModel.reportBug(
-                        Utils.getFilePathFromURI(context, images.first()) ?: "",
-                        fields.map {
-                            it.key.value to it.value
-                        }.toMap()
-                    )
-                },
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = 8.dp, bottom = 8.dp)
-            ) {
-                Text("Report Bug")
+            is BugItUIState.Loading -> {
+                LoadingScreen()
+            }
+
+            is BugItUIState.Success -> {
+                Toast.makeText(
+                    context,
+                    (uiState as BugItUIState.Success).message,
+                    Toast.LENGTH_SHORT
+                ).show()
+                onCloseClicked()
+            }
+
+            is BugItUIState.Error -> {
+                Toast.makeText(
+                    context,
+                    (uiState as BugItUIState.Error).message,
+                    Toast.LENGTH_SHORT
+                ).show()
+                onCloseClicked()
             }
         }
     }
 }
 
 @Composable
-fun HorizontalScrollScreen(allowMultipleImage: Boolean, uris: List<Uri>) {
+internal fun FormScreen(
+    modifier: Modifier,
+    context: Context,
+    images: List<Uri>,
+    viewModel: BugItViewModel,
+) {
+    val fields = remember {
+        val array = viewModel.initialFields.map {
+            it to ""
+        }.toTypedArray()
+        mutableStateMapOf(*array)
+    }
+
+    Column(modifier) {
+        GalleryComponent(images)
+        FieldsComponent(
+            fields,
+        )
+        Button(
+            onClick = {
+                viewModel.reportBug(
+                    Utils.getFilePathFromURI(context, images.first()) ?: "",
+                    fields.map {
+                        it.key.value to it.value
+                    }.toMap()
+                )
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(top = 8.dp, bottom = 8.dp)
+        ) {
+            Text("Report Bug")
+        }
+    }
+}
+
+@Composable
+fun GalleryComponent(uris: List<Uri>) {
     // a wrapper to fill the entire screen
     Box(modifier = Modifier.fillMaxWidth()) {
         // BowWithConstraints will provide the maxWidth used below
@@ -237,5 +260,37 @@ fun HorizontalScrollScreen(allowMultipleImage: Boolean, uris: List<Uri>) {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun FieldsComponent(
+    fields: MutableMap<Map.Entry<String, String>, String>,
+) {
+    fields.toSortedMap(
+        compareBy { it.key }
+    ).forEach { (key, value) ->
+        OutlinedTextField(
+            value = value,
+            singleLine = true,
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .fillMaxWidth(),
+            onValueChange = {
+                fields[key] = it
+            },
+            label = { Text(key.value) },
+            isError = false,
+        )
+    }
+}
+
+@Composable
+fun LoadingScreen() {
+    Box(
+        Modifier.fillMaxSize(),
+        Alignment.Center
+    ) {
+        CircularProgressIndicator()
     }
 }

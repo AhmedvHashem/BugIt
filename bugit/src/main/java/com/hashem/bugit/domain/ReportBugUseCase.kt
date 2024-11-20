@@ -1,10 +1,17 @@
 package com.hashem.bugit.domain
 
-import org.json.JSONObject
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-internal class ReportBugUseCase(private val repository: BugItRepository) {
+internal class ReportBugUseCase(
+    private val repository: BugRepository,
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
+) {
 
-    suspend fun report(bug: Bug): JSONObject {
-       return repository.report(bug)
+    suspend operator fun invoke(imagePath: String, fields: Map<String, String>): Bug {
+        return withContext(defaultDispatcher) {
+            repository.report(imagePath, fields)
+        }
     }
 }

@@ -2,8 +2,8 @@ package com.hashem.bugit
 
 import android.content.Context
 import android.net.Uri
-import com.hashem.bugit.data.BugItDataSource
-import com.hashem.bugit.framework.GoogleSheetDataSource
+import com.hashem.bugit.data.BugDataSource
+import com.hashem.bugit.framework.GoogleSheetBugDataSource
 import com.hashem.bugit.ui.BugItActivity
 
 class BugIt private constructor(val config: Config) {
@@ -31,7 +31,7 @@ class BugIt private constructor(val config: Config) {
         var fields: MutableMap<String, String> = mutableMapOf("01_description" to "Description")
             private set
 
-        var connector: BugItDataSource = GoogleSheetDataSource()
+        var connector: BugDataSource = GoogleSheetBugDataSource()
             private set
 
         fun allowMultipleImage(enable: Boolean) =
@@ -43,7 +43,7 @@ class BugIt private constructor(val config: Config) {
         fun addExtraField(key: String, label: String) =
             apply { fields[key] = label }
 
-        fun useExternalConnector(externalConnector: BugItDataSource) =
+        fun useExternalConnector(externalConnector: BugDataSource) =
             apply { connector = externalConnector }
     }
 
