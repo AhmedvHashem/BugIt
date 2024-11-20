@@ -39,17 +39,29 @@
 
   Then you simply config it before using like below
   ```kotlin
-  val bugit = BugIt.init(
-      BugIt.Config()
-          .allowMultipleImage(true)
-          .addExtraField("02_priority", "Priority")
-          .addExtraField("03_assignee", "Assignee")
-  ).getInstance()
+  val bugitConfig = BugIt.Config()
+        .allowMultipleImage(true)
+        .addExtraField("02_priority", "Priority")
+        .addExtraField("03_assignee", "Assignee")
+  val bugit = BugIt.init(bugitConfig).getInstance()
 
   // logic for pick from gallery or screenshot
   bugit.show(context, /* list of images uri */)
   ```
-
+  To support extra **connector** for example **Notion** or **Jira**
+  you can create new Implementation from `BugDataSource` and set it from the `BugIt.Config` when initializing
+  ```kotlin
+  val bugitConfig = BugIt.Config()
+        .useExternalConnector(externalConnector = object : BugDataSource {
+            override suspend fun report(
+                imagePath: String,
+                fields: Map<String, String>
+            ): com.hashem.bugit.data.BugData {
+                TODO("Notion or Jira implementation")
+            }
+        })
+  val bugit = BugIt.init(bugitConfig).getInstance()
+  ```
 ## 📦 Database
 - [Link](https://drive.google.com/drive/folders/1meSFbpvbwgKAJ2kAKBThQF400X8JOcPp?usp=drive_link)
 ---
