@@ -8,6 +8,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.hashem.bugit.BugIt
 import com.hashem.bugit.data.DefaultBugRepository
 import com.hashem.bugit.domain.ReportBugUseCase
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,6 +36,7 @@ internal class BugItViewModel(
     val uiState: StateFlow<BugItUIState> get() = _uiState.asStateFlow()
 
     fun reportBug(imagePath: String, fields: Map<String, String> = emptyMap()) {
+
         viewModelScope.launch {
             _uiState.value = BugItUIState.Loading
             try {

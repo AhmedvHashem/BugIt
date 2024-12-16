@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -37,12 +36,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.hashem.app.ui.theme.BugItTheme
 import com.hashem.bugit.BugIt
 import com.hashem.bugit.Utils
+import com.hashem.bugit.data.BugData
+import com.hashem.bugit.data.BugDataSource
 import com.smarttoolfactory.screenshot.ScreenshotBox
 import com.smarttoolfactory.screenshot.rememberScreenshotState
 
@@ -51,13 +51,21 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val bugit = BugIt.init(
-            BugIt.Config()
+        val bugConfig = BugIt.Config()
+//            .useExternalConnector(externalConnector = object : BugDataSource {
+//                override suspend fun report(
+//                    imagePath: String,
+//                    fields: Map<String, String>
+//                ): BugData {
+//                    return BugData(imagePath, fields)
+//                }
+//            })
 //                .allowMultipleImage(true)
-                .addExtraField("02_priority", "Priority")
+            .addExtraField("02_priority", "Priority")
 //                .addExtraField("03_department", "Department")
-                .addExtraField("04_assignee", "Assignee")
-        ).getInstance()
+            .addExtraField("04_assignee", "Assignee")
+
+        val bugit = BugIt.init(bugConfig).getInstance()
 
         installSplashScreen()
         enableEdgeToEdge()
