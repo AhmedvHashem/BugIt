@@ -1,8 +1,12 @@
 package com.hashem.app
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -41,8 +45,6 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.hashem.app.ui.theme.BugItTheme
 import com.hashem.bugit.BugIt
 import com.hashem.bugit.Utils
-import com.hashem.bugit.data.BugData
-import com.hashem.bugit.data.BugDataSource
 import com.smarttoolfactory.screenshot.ScreenshotBox
 import com.smarttoolfactory.screenshot.rememberScreenshotState
 
@@ -60,7 +62,7 @@ class MainActivity : ComponentActivity() {
 //                    return BugData(imagePath, fields)
 //                }
 //            })
-//                .allowMultipleImage(true)
+            .allowMultipleImage(true)
             .addExtraField("02_priority", "Priority")
 //                .addExtraField("03_department", "Department")
             .addExtraField("04_assignee", "Assignee")
@@ -110,11 +112,17 @@ class MainActivity : ComponentActivity() {
                         ) { isGranted ->
                             if (isGranted) {
                                 galleryLauncher.launch("image/*")
+                            } else {
+                                // Handle permission not granted
+                                openAppSettings(context)
                             }
                         }
 
                         ExtendedFloatingActionButton(onClick = {
-                            permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
+                                permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            else
+                                galleryLauncher.launch("image/*")
                         }) {
                             Text("Pick from Gallery")
                         }
@@ -171,4 +179,12 @@ fun MainView() {
         )
         Icon(Icons.Filled.Warning, contentDescription = "Close")
     }
+}
+
+fun openAppSettings(context: Context) {
+    val intent = Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.fromParts("package", context.packageName, null)
+    )
+    context.startActivity(intent)
 }
